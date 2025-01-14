@@ -4,11 +4,14 @@ block content
   h1 Admin Dashboard
   if error
     div.error-message= error
+  if success
+    div.success-message= success
   if !currentUser || !currentUser.isAdmin
     div.error-message Access Denied
   else
-    div.admin-controls
-      button#refreshData.button Refresh Data
+    form(action="/admin/refresh-data" method="POST")
+      button.button(type="submit") Refresh Data
+    
     table.table
       thead
         tr
@@ -21,25 +24,3 @@ block content
             td= user.username
             td= user.token
             td= user.lastTokenUpdate ? user.lastTokenUpdate.toLocaleString() : 'Never'
-
-    script.
-      let isLoading = false;
-
-      async function refreshData() {
-        if (isLoading) return;
-        isLoading = true;
-        try {
-          const response = await fetch('/api/admin/users');
-          const users = await response.json();
-          updateTable(users);
-        } catch (err) {
-          showError('Failed to refresh data');
-        } finally {
-          isLoading = false;
-        }
-      }
-
-      document.getElementById('refreshData')
-        .addEventListener('click', refreshData);
-
-      setInterval(refreshData, 15000);

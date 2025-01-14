@@ -4,6 +4,8 @@ block content
   h1 Dashboard
   if error
     div.error-message= error
+  if success
+    div.success-message= success
   if !user
     div.error-message Please login to continue
     a.button(href="/auth/login") Login
@@ -20,23 +22,7 @@ block content
         strong Last Update: 
         span #{user.lastTokenUpdate}
     
+    form(action="/refresh-token" method="POST")
+      button.button(type="submit") Refresh Token
+    
     a.button.logout-button(href="/auth/logout") Logout
-
-    script.
-      let loadingState = false;
-      
-      async function refreshToken() {
-        if (loadingState) return;
-        loadingState = true;
-        try {
-          const response = await fetch('/api/refresh-token');
-          const data = await response.json();
-          document.getElementById('tokenDisplay').textContent = data.token;
-        } catch (err) {
-          console.error('Token refresh failed');
-        } finally {
-          loadingState = false;
-        }
-      }
-
-      setInterval(refreshToken, 15000);
