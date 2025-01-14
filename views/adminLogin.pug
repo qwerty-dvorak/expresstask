@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1 Admin Login
+  if error
+    div.error-message= error
+  form(action="/auth/admin/login" method="POST")
+    div.form-group
+      label(for="username") Username:
+      input(type="text" name="username" id="username" required)
+    div.form-group
+      label(for="password") Password:
+      input(type="password" name="password" id="password" required)
+    button.submit-button(type="submit") Login

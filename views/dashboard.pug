@@ -1,0 +1,23 @@
+extends layout
+
+block content
+  h1 Dashboard
+  div.user-details
+    h2 User Information
+    p 
+      strong Username: 
+      span #{user.username}
+    p 
+      strong Token: 
+      span #{user.token}
+    p 
+      strong Last Token Update: 
+      span #{user.lastTokenUpdate}
+  
+  a.button.logout-button(href="/auth/logout") Logout
+
+  // Auto-refresh script
+  script.
+    setInterval(function() {
+      location.reload();
+    }, 15000); // 15 seconds

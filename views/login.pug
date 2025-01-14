@@ -1,0 +1,18 @@
+extends layout
+
+block content
+  h1 Login
+  if success
+    div.success-message= success
+  if error
+    div.error-message= error
+  form(action="/auth/login" method="POST")
+    div.form-group
+      label(for="username") Username:
+      input(type="text" name="username" id="username" required)
+    div.form-group
+      label(for="password") Password:
+      input(type="password" name="password" id="password" required)
+    button.submit-button(type="submit") Login
+  p Don't have an account? 
+    a(href="/auth/register") Register here

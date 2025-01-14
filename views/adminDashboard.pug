@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  h1 Admin Dashboard
+  table.table
+    thead
+      tr
+        th Username
+        th Token
+        th Last Token Update
+    tbody
+      each user in users
+        tr
+          td= user.username
+          td= user.token
+          td= user.lastTokenUpdate.toLocaleString()
+
+  // Auto-refresh script
+  script.
+    setInterval(function() {
+      location.reload();
+    }, 15000); // 15 seconds
