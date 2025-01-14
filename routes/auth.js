@@ -4,10 +4,16 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const User = require('../models/User');
 
-// Render login page
+// Update login GET route
 router.get('/login', (req, res) => {
-  const success = req.query.success;
-  res.render('login', { title: 'Login', error: null, success });
+  const error = req.flash('error')[0];
+  const success = req.flash('success')[0];
+  
+  res.render('login', {
+    title: 'Login',
+    error: error || null,
+    success: success || null
+  });
 });
 
 // Render register page
@@ -44,22 +50,36 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.post('/login', async (req, res) => {
+// Update login POST route
+router.post('/login', async (req, res, next) => {
   try {
     const { username, password } = req.body;
+    
     const user = await User.findOne({ username });
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.render('login', { 
-        title: 'Login', 
-        error: 'Invalid credentials' 
-      });
+      req.flash('error', 'Invalid username or password');
+      return res.redirect('/auth/login');
     }
-    res.redirect(`/dashboard?userId=${user._id}`);
+
+    // Set session with proper user data
+    req.session.userId = user._id;
+    req.session.isAdmin = Boolean(user.isAdmin); // Ensure boolean value
+
+    // Role-based redirect
+    let redirectUrl;
+    if (user.isAdmin) {
+      redirectUrl = '/admin/dashboard';
+    } else {
+      redirectUrl = req.session.returnTo || '/dashboard';
+      req.session.returnTo = undefined;
+    }
+    
+    req.flash('success', `Welcome back ${user.username}`);
+    res.redirect(redirectUrl);
+
   } catch (error) {
-    res.render('login', { 
-      title: 'Login', 
-      error: error.message 
-    });
+    req.flash('error', 'Login failed. Please try again.');
+    res.redirect('/auth/login');
   }
 });
 
@@ -68,36 +88,34 @@ router.get('/admin/login', (req, res) => {
   res.render('adminLogin', { title: 'Admin Login', error: null });
 });
 
-// Handle admin login
-router.post('/admin/login', (req, res) => {
+// Update admin login to set proper session data
+router.post('/admin/login', async (req, res) => {
   const { username, password } = req.body;
-  // Hardcoded admin credentials
-  const adminUsername = 'admin';
-  const adminPassword = 'admin123';
+  try {
+    const user = await User.findOne({ username });
+    if (!user || !user.isAdmin || !(await bcrypt.compare(password, user.password))) {
+      return res.render('adminLogin', { 
+        title: 'Admin Login', 
+        error: 'Invalid credentials' 
+      });
+    }
 
-  if (username === adminUsername && password === adminPassword) {
+    req.session.userId = user._id;
     req.session.isAdmin = true;
+    req.flash('success', 'Admin login successful');
     res.redirect('/admin/dashboard');
-  } else {
+  } catch (error) {
     res.render('adminLogin', { 
       title: 'Admin Login', 
-      error: 'Invalid credentials' 
+      error: 'Login failed' 
     });
   }
 });
 
 // Add logout route before module.exports
 router.get('/logout', (req, res) => {
-  if (req.session) {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.redirect('/');
-      }
-      res.redirect('/auth/login?success=Logged out successfully');
-    });
-  } else {
-    res.redirect('/auth/login');
-  }
+  req.session.destroy();
+  res.redirect('/auth/login');
 });
 
 module.exports = router;

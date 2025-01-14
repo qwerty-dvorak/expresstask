@@ -16,7 +16,14 @@ const userSchema = new mongoose.Schema({
   lastTokenUpdate: {
     type: Date,
     default: Date.now
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false,
+    index: true
   }
+}, {
+  timestamps: true
 });
 
 module.exports = mongoose.model('User', userSchema);

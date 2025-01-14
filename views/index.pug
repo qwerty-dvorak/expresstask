@@ -3,7 +3,18 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
-  div.button-group
-    a.button(href="/auth/login") Login
-    a.button(href="/auth/register") Register
-    a.button(href="/auth/admin/login") Admin Login
+  if error
+    div.error-message= error
+  div.auth-status
+    if user
+      p Welcome back, #{user.id}
+      div.button-group
+        a.button(href="/dashboard") Dashboard
+        if user.isAdmin
+          a.button(href="/admin/dashboard") Admin Dashboard
+        a.button(href="/auth/logout") Logout
+    else
+      div.button-group
+        a.button(href="/auth/login") Login
+        a.button(href="/auth/register") Register
+        a.button(href="/auth/admin/login") Admin Login

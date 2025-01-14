@@ -2,7 +2,7 @@ const cron = require('cron');
 const { v4: uuidv4 } = require('uuid');
 const User = require('../models/User');
 
-const tokenUpdateJob = new cron.CronJob('*/15 * * * * *', async () => {
+const tokenUpdateJob = new cron.CronJob('1 * * * * *', async () => {
   try {
     const users = await User.find({});
     

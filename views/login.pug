@@ -2,9 +2,9 @@ extends layout
 
 block content
   h1 Login
-  if success
+  if success && success.length > 0
     div.success-message= success
-  if error
+  if error && error.length > 0
     div.error-message= error
   form(action="/auth/login" method="POST")
     div.form-group

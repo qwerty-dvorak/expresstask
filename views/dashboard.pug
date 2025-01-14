@@ -2,22 +2,41 @@ extends layout
 
 block content
   h1 Dashboard
-  div.user-details
-    h2 User Information
-    p 
-      strong Username: 
-      span #{user.username}
-    p 
-      strong Token: 
-      span #{user.token}
-    p 
-      strong Last Token Update: 
-      span #{user.lastTokenUpdate}
-  
-  a.button.logout-button(href="/auth/logout") Logout
+  if error
+    div.error-message= error
+  if !user
+    div.error-message Please login to continue
+    a.button(href="/auth/login") Login
+  else
+    div.user-details
+      h2 User Information
+      p 
+        strong Username: 
+        span #{user.username}
+      p 
+        strong Token: 
+        span#tokenDisplay #{user.token}
+      p 
+        strong Last Update: 
+        span #{user.lastTokenUpdate}
+    
+    a.button.logout-button(href="/auth/logout") Logout
 
-  // Auto-refresh script
-  script.
-    setInterval(function() {
-      location.reload();
-    }, 15000); // 15 seconds
+    script.
+      let loadingState = false;
+      
+      async function refreshToken() {
+        if (loadingState) return;
+        loadingState = true;
+        try {
+          const response = await fetch('/api/refresh-token');
+          const data = await response.json();
+          document.getElementById('tokenDisplay').textContent = data.token;
+        } catch (err) {
+          console.error('Token refresh failed');
+        } finally {
+          loadingState = false;
+        }
+      }
+
+      setInterval(refreshToken, 15000);
